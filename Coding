@@ -1,0 +1,1055 @@
+Codings
+
+package com.prop.tripplanner;
+
+
+
+import android.annotation.SuppressLint;
+
+import android.app.ProgressDialog;
+
+import android.content.Intent;
+
+import android.os.AsyncTask;
+
+import android.os.Bundle;
+
+import android.util.Log;
+
+import android.view.View;
+
+import android.view.View.OnClickListener;
+
+import android.widget.Button;
+
+import android.widget.EditText;
+
+import android.widget.Toast;
+
+
+
+import java.sql.Connection;
+
+import java.sql.DriverManager;
+
+import java.sql.ResultSet;
+
+import java.sql.SQLException;
+
+import java.sql.Statement;
+
+import java.util.regex.Matcher;
+
+import java.util.regex.Pattern;
+
+
+
+public class RegisterActivity extends MainActivity {
+
+
+
+   EditText edtName, edtMobileNo, edtEmail, edtusername,  edtPassword, edtprof;
+
+Button btnSubmit,btnSubmit1;
+
+Connection conn;
+
+
+
+private String name, mobilenumber, email, username,prof, password;
+
+
+
+
+
+   
+
+   @Override
+
+   protected void onCreate(Bundle savedInstanceState) {
+
+      super.onCreate(savedInstanceState);
+
+      setContentView(R.layout.register);
+
+      
+
+      edtName = (EditText) findViewById(R.id.register_name);
+
+      edtusername = (EditText) findViewById(R.id.register_username);
+
+      edtEmail = (EditText) findViewById(R.id.register_email);
+
+      edtPassword = (EditText) findViewById(R.id.register_password);
+
+      edtMobileNo = (EditText) findViewById(R.id.register_phno);
+
+      edtprof = (EditText) findViewById(R.id.register_prof);
+
+   
+
+      btnSubmit = (Button) findViewById(R.id.analysis);
+
+      btnSubmit.setOnClickListener(new OnClickListener() {
+
+
+
+         public void onClick(View v) {
+
+            name = edtName.getText().toString();
+
+            username = edtusername.getText().toString();
+
+            email = edtEmail.getText().toString();
+
+            password = edtPassword.getText().toString();
+
+            mobilenumber = edtMobileNo.getText().toString();
+
+            prof = edtprof.getText().toString();
+
+            try {
+
+               if(verify())
+
+               {
+
+                  new QuerySQL().execute();
+
+               }
+
+               
+
+      
+
+               } catch (Exception e) {
+
+              Log.e("ERRO",e.getMessage());
+
+            }
+
+
+
+            
+
+         }
+
+      });
+
+      
+
+      btnSubmit1 = (Button) findViewById(R.id.register_btn_cancel);
+
+      btnSubmit1.setOnClickListener(new OnClickListener() {
+
+
+
+         public void onClick(View v) {
+
+            Intent i = new Intent(getApplicationContext(), MainActivity.class);
+
+            startActivity(i);
+
+            
+
+            
+
+         }
+
+      });
+
+
+
+   }
+
+   
+
+   public boolean verify()
+
+   {
+
+//    EditText name, userName, password, cpassword, email, phoneNumber;
+
+      Boolean ret=true;
+
+      if(edtName.getText().toString().length()<1){edtName.setError("Field Required");ret=false;}
+
+      if(edtusername.getText().toString().length()<1){edtusername.setError("Field Required");ret=false;}
+
+      if(edtPassword.getText().toString().length()<1){edtPassword.setError("Field Required");ret=false;}
+
+      if(edtprof.getText().toString().length()<1){edtprof.setError("Field Required");ret=false;}
+
+      if(!edtPassword.getText().toString().equals(edtprof.getText().toString())){edtPassword.setError("Password not same");ret=false;}
+
+      
+
+      if(!edtEmail.getText().toString().contains("@")){edtEmail.setError("E-Mail ID Invalid");ret=false;}
+
+      if(edtEmail.getText().toString().length()<1){edtEmail.setError("Field Required");ret=false;}
+
+      if(edtMobileNo.getText().toString().length()<10){edtMobileNo.setError("Invalid Phone Number");ret=false;}//It will Set but ok it wont be visible
+
+      if(edtMobileNo.getText().toString().length()<1){edtMobileNo.setError("Field Required");ret=false;}
+
+      
+
+      String expression = "^([0-9\\+]|\\(\\d{0,1}\\))[0-9\\-\\. ]{0,15}$";
+
+        CharSequence inputString = edtMobileNo.getText().toString();
+
+        Pattern pattern = Pattern.compile(expression);
+
+        Matcher matcher = pattern.matcher(inputString);
+
+        if (matcher.matches())
+
+        {
+
+      
+
+        }
+
+        else
+
+        {
+
+           edtMobileNo.setError("Invalid Number");ret=false;
+
+        }
+
+      
+
+      
+
+      return ret;
+
+   }
+
+   
+
+   
+
+   public class QuerySQL extends AsyncTask<String, Void, Boolean> {
+
+
+
+      ProgressDialog pDialog ;
+
+      Exception error;
+
+      ResultSet rs;
+
+       @Override
+
+       protected void onPreExecute() {
+
+           super.onPreExecute();
+
+           
+
+           pDialog = new ProgressDialog(RegisterActivity.this);
+
+           pDialog.setTitle("Registration");
+
+           pDialog.setMessage("Registering your credentials...");
+
+           pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+
+           pDialog.setIndeterminate(false);
+
+           pDialog.setCancelable(false);
+
+           pDialog.show();
+
+       }
+
+
+
+       @Override
+
+       protected Boolean doInBackground(String... args) {
+
+          
+
+          
+
+          
+
+          
+
+         try {
+
+            
+
+            
+
+            Class.forName("com.mysql.jdbc.Driver");
+
+            conn = DriverManager.getConnection("jdbc:mysql://mysql-75344-0.cloudclusters.net:18880/tripplanner","admin","cU5zYktH");
+
+                  } catch (SQLException se) {
+
+            Log.e("ERRO1",se.getMessage());
+
+         } catch (ClassNotFoundException e) {
+
+            Log.e("ERRO2",e.getMessage());
+
+         } catch (Exception e) {
+
+             Log.e("ERRO3",e.getMessage());
+
+         }
+
+         
+
+
+
+         try {
+
+            Statement statement = conn.createStatement();
+
+            int success=statement.executeUpdate("insert into userdetails values('"+name+"','"+username+"','"+password+"','"+email+"','"+mobilenumber+"')");
+
+         
+
+            if (success >= 1) {
+
+               // successfully created product
+
+               
+
+               return true;
+
+               // closing this screen
+
+//             finish();
+
+            } else {
+
+               // failed to create product
+
+               return false;
+
+            }
+
+
+
+
+
+            
+
+            // Toast.makeText(getBaseContext(),
+
+            // "Successfully Inserted.", Toast.LENGTH_LONG).show();
+
+         } catch (Exception e) {
+
+            error = e;
+
+            return false;
+
+//          Toast.makeText(getBaseContext(),"Successfully Registered...", Toast.LENGTH_LONG).show();
+
+         }
+
+
+
+
+
+       }
+
+
+
+       @SuppressLint("NewApi")
+
+      @Override
+
+       protected void onPostExecute(Boolean result1) {
+
+          pDialog.dismiss ( ) ;
+
+          if(result1)
+
+          {
+
+                
+
+             Toast.makeText(getBaseContext(),"Successfully created your credentials." ,Toast.LENGTH_LONG).show();
+
+               
+
+//             System.out.println("ELSE(JSON) LOOP EXE");
+
+               try {// try3 open
+
+                  
+
+                  Intent i = new Intent(getApplicationContext(),
+
+                        LoginActivity.class);
+
+                  startActivity(i);     
+
+                  
+
+               } catch (Exception e1) {
+
+                  Toast.makeText(getBaseContext(), e1.toString(),
+
+                        Toast.LENGTH_LONG).show();
+
+
+
+               }              
+
+            
+
+            
+
+          }else
+
+          {
+
+             if(error!=null)
+
+             {
+
+                Toast.makeText(getApplicationContext(),error.toString() ,Toast.LENGTH_LONG).show();
+
+                Log.d("Error not null...", error.toString());
+
+             }
+
+             else
+
+             {
+
+                Toast.makeText(getBaseContext(),"Not crreated your credentials!!!" ,Toast.LENGTH_LONG).show();
+
+             }
+
+          }
+
+          super.onPostExecute(result1);
+
+       }
+
+   }
+
+
+
+
+
+}
+
+package com.prop.tripplanner;
+
+
+
+import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
+
+import static java.lang.Math.asin;
+
+import static java.lang.Math.atan2;
+
+import static java.lang.Math.cos;
+
+import static java.lang.Math.pow;
+
+import static java.lang.Math.sin;
+
+import static java.lang.Math.sqrt;
+
+import static java.lang.Math.toDegrees;
+
+import static java.lang.Math.toRadians;
+
+
+
+import android.Manifest;
+
+import android.annotation.SuppressLint;
+
+import android.content.Intent;
+
+import android.content.pm.PackageManager;
+
+import android.location.Location;
+
+import android.location.LocationListener;
+
+import android.location.LocationManager;
+
+import android.os.Bundle;
+
+import android.os.Handler;
+
+import android.os.SystemClock;
+
+import android.util.Log;
+
+import android.view.animation.AccelerateDecelerateInterpolator;
+
+import android.view.animation.Interpolator;
+
+import android.widget.Toast;
+
+
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import androidx.core.app.ActivityCompat;
+
+import androidx.core.content.ContextCompat;
+
+
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+
+import com.google.android.gms.maps.CameraUpdate;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+
+import com.google.android.gms.maps.GoogleMap;
+
+import com.google.android.gms.maps.OnMapReadyCallback;
+
+import com.google.android.gms.maps.SupportMapFragment;
+
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+
+import com.google.android.gms.maps.model.LatLng;
+
+import com.google.android.gms.maps.model.Marker;
+
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import com.google.android.gms.maps.model.Polyline;
+
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import com.google.android.gms.tasks.Task;
+
+
+
+import java.util.ArrayList;
+
+import java.util.List;
+
+
+
+public class Direction_A extends AppCompatActivity implements OnMapReadyCallback, TaskLoadedCallback {
+
+
+
+
+
+    CustPrograssbar custPrograssbar;
+
+    FusedLocationProviderClient fusedLocationProviderClient;
+
+
+
+    GoogleMap mMap;
+
+    Marker marker;
+
+    MarkerOptions place1;
+
+    MarkerOptions place2;
+
+    MarkerOptions placePath;
+
+    private Polyline currentPolyline;
+
+    double mLatitude;
+
+    double mLongitude;
+
+    protected LocationManager locationManager;
+
+    protected LocationListener locationListener;
+
+    double pickup_lat = 19.2094;
+
+    double pickup_long = 73.0939;
+
+    double drop_lat = 19.0760;
+
+    double drop_long = 72.8777;
+
+    String s1,s2,s3,s4,s5,groupmember,grouplatitude,grouplongitude;
+
+    //double fromlat,fromlong;
+
+    //double tolat,tolong;
+
+
+
+    GPSTracker gpstracker;
+
+    @Override
+
+    protected void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_direction);
+
+
+
+        Intent intent=getIntent();
+
+        s1 = intent.getStringExtra("tolat");
+
+        s2 = intent.getStringExtra("tolong");
+
+        s3 = intent.getStringExtra("location");
+
+
+
+        s4 = intent.getStringExtra("fromlat");
+
+        s5 = intent.getStringExtra("fromlong");
+
+
+
+        groupmember = intent.getStringExtra("groupmember");
+
+        grouplatitude = intent.getStringExtra("grouplatitude");
+
+        grouplongitude = intent.getStringExtra("grouplongitude");
+
+
+
+        drop_lat=Double.parseDouble(s1);
+
+        drop_long=Double.parseDouble(s2);
+
+
+
+        pickup_lat=Double.parseDouble(s4);
+
+        pickup_long =Double.parseDouble(s5);
+
+
+
+        fusedLocationProviderClient = getFusedLocationProviderClient(this);
+
+
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+
+        mapFragment.getMapAsync(this);
+
+
+
+
+
+        custPrograssbar = new CustPrograssbar();
+
+        showCurrentLocationOnMap();
+
+    }
+
+
+
+
+
+
+
+    @Override
+
+    public void onMapReady(GoogleMap googleMap) {
+
+
+
+        mMap = googleMap;
+
+
+
+        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+        mMap.getUiSettings().setMapToolbarEnabled(false);
+
+        if (mMap.isIndoorEnabled()) {
+
+            mMap.setIndoorEnabled(false);
+
+        }
+
+
+
+
+
+    }
+
+
+
+    public void createroot() {
+
+        Log.e("lat", mLatitude + " long " + mLongitude);
+
+        //pickup_lat=mLatitude;
+
+        //pickup_long=mLongitude;
+
+        //LatLng latLng = new LatLng(pickup_lat, pickup_long);
+
+        LatLng latLng = new LatLng(pickup_lat, pickup_long);
+
+        if (mMap != null && marker != null) {
+
+
+
+            animateMarkerToGB(marker, latLng, new LatLngInterpolator.Spherical());
+
+
+
+        } else {
+
+            placePath = new MarkerOptions().position(latLng).title("Path");
+
+            place1 = new MarkerOptions().position(new LatLng(drop_lat, drop_long)).title(s3).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_pin));
+
+          // its ur current location  place2 = new MarkerOptions().position(latLng).title("Me").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_current_loc));
+
+            place2 = new MarkerOptions().position(new LatLng(pickup_lat, pickup_long)).title("From").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_current_loc));
+
+
+
+            new FetchURL(Direction_A.this).execute(getUrl(place1.getPosition(), place2.getPosition(), "driving"), "driving");
+
+
+
+            CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(latLng, 10);
+
+            mMap.animateCamera(yourLocation);
+
+            marker = mMap.addMarker(place1);
+
+            mMap.addMarker(place2);
+
+
+
+
+
+            String[] groupmember1 = groupmember.split(",");
+
+            String[] grouplatitude1 = grouplatitude.split(",");
+
+            String[] grouplongitude1 = grouplongitude.split(",");
+
+            for (int i=0;i<groupmember1.length-1;i++)
+
+            {
+
+                double lat1=Double.parseDouble(grouplatitude1[i]);
+
+                double long1=Double.parseDouble(grouplongitude1[i]);
+
+                MarkerOptions m1 = new MarkerOptions().position(new LatLng(lat1, long1)).title(groupmember1[i]).icon(BitmapDescriptorFactory.fromResource(R.drawable.markerpin));
+
+                mMap.addMarker(m1);
+
+            }
+
+
+
+
+
+            marker.showInfoWindow();
+
+
+
+
+
+        }
+
+
+
+    }
+
+
+
+
+
+    public static void animateMarkerToGB(final Marker marker, final LatLng finalPosition, final LatLngInterpolator latLngInterpolator) {
+
+        final LatLng startPosition = marker.getPosition();
+
+        final Handler handler = new Handler();
+
+        final long start = SystemClock.uptimeMillis();
+
+        final Interpolator interpolator = new AccelerateDecelerateInterpolator();
+
+        final float durationInMs = 2000;
+
+        handler.post(new Runnable() {
+
+            long elapsed;
+
+            float t;
+
+            float v;
+
+
+
+            @Override
+
+            public void run() {
+
+                // Calculate progress using interpolator
+
+                elapsed = SystemClock.uptimeMillis() - start;
+
+                t = elapsed / durationInMs;
+
+                v = interpolator.getInterpolation(t);
+
+                marker.setPosition(latLngInterpolator.interpolate(v, startPosition, finalPosition));
+
+                // Repeat till progress is complete.
+
+                if (t < 1) {
+
+                    // Post again 16ms later.
+
+                    handler.postDelayed(this, 16);
+
+                }
+
+            }
+
+        });
+
+    }
+
+
+
+    @Override
+
+    public void onTaskDone(Object... values) {
+
+
+
+        if (currentPolyline != null)
+
+            currentPolyline.remove();
+
+        currentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
+
+
+
+    }
+
+
+
+
+
+    public interface LatLngInterpolator {
+
+        LatLng interpolate(float fraction, LatLng a, LatLng b);
+
+
+
+        class Spherical implements LatLngInterpolator {
+
+            /* From github.com/googlemaps/android-maps-utils */
+
+            @Override
+
+            public LatLng interpolate(float fraction, LatLng from, LatLng to) {
+
+                // http://en.wikipedia.org/wiki/Slerp
+
+                double fromLat = toRadians(from.latitude);
+
+                double fromLng = toRadians(from.longitude);
+
+                double toLat = toRadians(to.latitude);
+
+                double toLng = toRadians(to.longitude);
+
+                double cosFromLat = cos(fromLat);
+
+                double cosToLat = cos(toLat);
+
+                // Computes Spherical interpolation coefficients.
+
+                double angle = computeAngleBetween(fromLat, fromLng, toLat, toLng);
+
+                double sinAngle = sin(angle);
+
+                if (sinAngle < 1E-6) {
+
+                    return from;
+
+                }
+
+                double a = sin((1 - fraction) * angle) / sinAngle;
+
+                double b = sin(fraction * angle) / sinAngle;
+
+                // Converts from polar to vector and interpolate.
+
+                double x = a * cosFromLat * cos(fromLng) + b * cosToLat * cos(toLng);
+
+                double y = a * cosFromLat * sin(fromLng) + b * cosToLat * sin(toLng);
+
+                double z = a * sin(fromLat) + b * sin(toLat);
+
+                // Converts interpolated vector back to polar.
+
+                double lat = atan2(z, sqrt(x * x + y * y));
+
+                double lng = atan2(y, x);
+
+                return new LatLng(toDegrees(lat), toDegrees(lng));
+
+            }
+
+
+
+            private double computeAngleBetween(double format, double fromLng, double toLat, double toLng) {
+
+                // Haversine's formula
+
+                double dLat = format - toLat;
+
+                double dLng = fromLng - toLng;
+
+                return 2 * asin(sqrt(pow(sin(dLat / 2), 2) +
+
+                        cos(format) * cos(toLat) * pow(sin(dLng / 2), 2)));
+
+            }
+
+        }
+
+    }
+
+
+
+
+
+    private String getUrl(LatLng origin, LatLng dest, String directionMode) {
+
+        // Origin of route
+
+        String strOrigin = "origin=" + origin.latitude + "," + origin.longitude;
+
+        // Destination of route
+
+        String strDest = "destination=" + dest.latitude + "," + dest.longitude;
+
+        // Mode
+
+        String mode = "mode=" + directionMode;
+
+        // Building the parameters to the web service
+
+        String parameters = strOrigin + "&" + strDest + "&" + mode;
+
+        // Output format
+
+        String output = "json";
+
+        // Building the url to the web service
+
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + "&key="+getResources().getString(R.string.googleapp_key);
+
+        return url;
+
+    }
+
+
+
+    private void showCurrentLocationOnMap() {
+
+
+
+        if (checkAndRequestPermissions()) {
+
+
+
+            @SuppressLint("MissingPermission")
+
+            Task<Location> lastLocation = fusedLocationProviderClient.getLastLocation();
+
+            lastLocation.addOnSuccessListener(this, location -> {
+
+                if (location != null) {
+
+                    mMap.clear();
+
+
+
+                    //Go to Current Location
+
+                    mLatitude = location.getLatitude();
+
+                    mLongitude = location.getLongitude();
+
+
+
+                    createroot();
+
+                } else {
+
+                    //Gps not enabled if loc is null
+
+                    Toast.makeText(Direction_A.this, "Location not Available", Toast.LENGTH_SHORT).show();
+
+
+
+                }
+
+            });
+
+            lastLocation.addOnFailureListener(e -> {
+
+                //If perm provided then gps not enabled
+
+                Toast.makeText(Direction_A.this, "Location Not Availabe", Toast.LENGTH_SHORT).show();
+
+
+
+            });
+
+        }
+
+
+
+    }
+
+
+
+    private boolean checkAndRequestPermissions() {
+
+        int locationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+
+        int coarsePermision = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        List<String> listPermissionsNeeded = new ArrayList<>();
+
+
+
+        if (locationPermission != PackageManager.PERMISSION_GRANTED) {
+
+            listPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+
+        }
+
+        if (coarsePermision != PackageManager.PERMISSION_GRANTED) {
+
+            listPermissionsNeeded.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        }
+
+
+
+        if (!listPermissionsNeeded.isEmp
